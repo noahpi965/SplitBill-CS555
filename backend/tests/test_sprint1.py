@@ -85,7 +85,7 @@ def test_us05_view_balance_summary(client):
     GIVEN a group with id=1
     WHEN  GET /api/balance?group_id=1 is called
     THEN  the response status should be 200 OK
-          and the body should contain a 'balances' list.
+          and the body should contain a 'balances' list
     """
     response = client.get("/api/balance?group_id=1")
 
