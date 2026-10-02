@@ -66,7 +66,7 @@ def test_us04_view_group_bills(client):
     GIVEN a group with id=1
     WHEN  GET /api/bills?group_id=1 is called
     THEN  the response status should be 200 OK
-          and the body should contain a 'bills' list.
+          and the body should contain a 'bills' list
     """
     response = client.get("/api/bills?group_id=1")
 
