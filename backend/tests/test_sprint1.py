@@ -105,7 +105,7 @@ def test_us06_view_monthly_report(client):
     WHEN  GET /api/reports/monthly?group_id=1&year=2026&month=10 is called
     THEN  the response status should be 200 OK
           and the body should include 'total' and 'items' fields
-          with the correct year/month echoed back.
+          with the correct year/month echoed back
     """
     response = client.get("/api/reports/monthly?group_id=1&year=2026&month=10")
 
