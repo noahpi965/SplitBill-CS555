@@ -1,21 +1,107 @@
+from datetime import datetime
+
 from flask import Blueprint, jsonify, request
-from app import db
+from extensions import db
 from models import Bill, BillParticipant
 
 bills_bp = Blueprint("bills", __name__)
+
+
+def _split_equally(total_amount, participants):
+    """Split an amount into equal shares, spreading leftover cents so shares sum to the total."""
+    total_cents = round(total_amount * 100)
+    base, remainder = divmod(total_cents, len(participants))
+    return [(base + (1 if i < remainder else 0)) / 100 for i in range(len(participants))]
+
+
+def _validate_bill(data):
+    errors = {}
+
+    title = data.get("title")
+    if not isinstance(title, str) or not title.strip():
+        errors["title"] = "Title is required."
+
+    amount = data.get("total_amount")
+    if amount is None or amount == "":
+        errors["total_amount"] = "Amount is required."
+    else:
+        try:
+            amount = float(amount)
+            if amount <= 0:
+                errors["total_amount"] = "Amount must be greater than 0."
+        except (TypeError, ValueError):
+            errors["total_amount"] = "Amount must be a number."
+
+    paid_by = data.get("paid_by")
+    if not isinstance(paid_by, str) or not paid_by.strip():
+        errors["paid_by"] = "Payer is required."
+
+    group_id = data.get("group_id")
+    if isinstance(group_id, bool) or not isinstance(group_id, int):
+        errors["group_id"] = "group_id must be an integer."
+
+    participants = data.get("participants")
+    if not isinstance(participants, list) or not participants:
+        errors["participants"] = "At least one participant is required."
+    else:
+        participants = [p.strip() for p in participants if isinstance(p, str) and p.strip()]
+        if not participants:
+            errors["participants"] = "At least one participant is required."
+        elif len(set(participants)) != len(participants):
+            errors["participants"] = "Participants must be unique."
+
+    created_at = None
+    if data.get("date"):
+        try:
+            created_at = datetime.strptime(data["date"], "%Y-%m-%d")
+        except (TypeError, ValueError):
+            errors["date"] = "Date must use YYYY-MM-DD format."
+
+    if errors:
+        return None, errors
+
+    return {
+        "title":        title.strip(),
+        "total_amount": round(amount, 2),
+        "paid_by":      paid_by.strip(),
+        "group_id":     group_id,
+        "category":     (data.get("category") or "General").strip() or "General",
+        "participants": participants,
+        "created_at":   created_at,
+    }, None
 
 
 # ── US01: Add a Shared Bill ──────────────────────────────────────────────────
 @bills_bp.route("/bills", methods=["POST"])
 def add_bill():
     """
-    Create a new shared bill.
-    Body JSON: { title, total_amount, paid_by, group_id, participants: [name, ...] }
+    Create a new shared bill and split it equally among participants.
+    Body JSON: { title, total_amount, paid_by, group_id, participants: [name, ...],
+                 category?, date? (YYYY-MM-DD) }
     """
     data = request.get_json(silent=True) or {}
+    cleaned, errors = _validate_bill(data)
+    if errors:
+        return jsonify({"error": "Validation failed", "errors": errors}), 400
 
-    # TODO: validate & persist in Sprint 1
-    return jsonify({"message": "Bill created (stub)", "data": data}), 201
+    bill = Bill(
+        title=cleaned["title"],
+        total_amount=cleaned["total_amount"],
+        paid_by=cleaned["paid_by"],
+        group_id=cleaned["group_id"],
+        category=cleaned["category"],
+    )
+    if cleaned["created_at"]:
+        bill.created_at = cleaned["created_at"]
+
+    shares = _split_equally(cleaned["total_amount"], cleaned["participants"])
+    for name, share in zip(cleaned["participants"], shares):
+        bill.participants.append(BillParticipant(user_name=name, share=share))
+
+    db.session.add(bill)
+    db.session.commit()
+
+    return jsonify({"message": "Bill created", "bill": bill.to_dict()}), 201
 
 
 # ── US04: View Group Bills ───────────────────────────────────────────────────
