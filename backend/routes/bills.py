@@ -108,13 +108,22 @@ def add_bill():
 @bills_bp.route("/bills", methods=["GET"])
 def get_bills():
     """
-    Return all bills for a group.
+    Return all bills for a group, newest first.
     Query param: ?group_id=<int>
     """
     group_id = request.args.get("group_id", type=int)
+    if group_id is None:
+        return jsonify({"error": "group_id query parameter is required"}), 400
 
-    # TODO: filter by group_id and return real records in Sprint 1
-    return jsonify({"bills": [], "group_id": group_id}), 200
+    bills = (
+        Bill.query.filter_by(group_id=group_id)
+        .order_by(Bill.created_at.desc(), Bill.id.desc())
+        .all()
+    )
+    body = {"group_id": group_id, "bills": [b.to_dict() for b in bills]}
+    if not bills:
+        body["message"] = "No bills yet. Add one!"
+    return jsonify(body), 200
 
 
 # ── US05: View Balance Summary ───────────────────────────────────────────────
