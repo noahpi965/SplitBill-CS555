@@ -1,7 +1,8 @@
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 
-from extensions import db
+db = SQLAlchemy()
 
 
 def create_app(testing=False):
@@ -36,5 +37,4 @@ def create_app(testing=False):
 
 if __name__ == "__main__":
     app = create_app()
-    # Port 5000 is taken by the macOS AirPlay Receiver.
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5000)
