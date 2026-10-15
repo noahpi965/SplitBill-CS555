@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 
 from flask import Blueprint, jsonify, request
@@ -125,6 +126,42 @@ def get_balance():
     Query param: ?group_id=<int>
     """
     group_id = request.args.get("group_id", type=int)
+    if group_id is None:
+        return jsonify({"error": "group_id query parameter is required"}), 400
 
-    # TODO: compute real balances in Sprint 1
-    return jsonify({"group_id": group_id, "balances": []}), 200
+    net_cents = defaultdict(int)
+    for bill in Bill.query.filter_by(group_id=group_id).all():
+        for p in bill.participants:
+            if p.settled or p.user_name == bill.paid_by:
+                continue
+            cents = round(p.share * 100)
+            net_cents[bill.paid_by] += cents
+            net_cents[p.user_name] -= cents
+
+    creditors = sorted(((n, c) for n, c in net_cents.items() if c > 0), key=lambda x: (-x[1], x[0]))
+    debtors   = sorted(((n, -c) for n, c in net_cents.items() if c < 0), key=lambda x: (-x[1], x[0]))
+
+    balances = []
+    i = j = 0
+    while i < len(debtors) and j < len(creditors):
+        debtor, owe = debtors[i]
+        creditor, due = creditors[j]
+        amount = min(owe, due)
+        balances.append({"from": debtor, "to": creditor, "amount": amount / 100})
+        debtors[i] = (debtor, owe - amount)
+        creditors[j] = (creditor, due - amount)
+        if debtors[i][1] == 0:
+            i += 1
+        if creditors[j][1] == 0:
+            j += 1
+
+    members = {name: cents / 100 for name, cents in sorted(net_cents.items()) if cents != 0}
+    body = {
+        "group_id":    group_id,
+        "balances":    balances,
+        "net":         members,
+        "all_settled": not balances,
+    }
+    if not balances:
+        body["message"] = "All settled up"
+    return jsonify(body), 200
