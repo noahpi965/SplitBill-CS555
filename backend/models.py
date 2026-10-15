@@ -11,7 +11,15 @@ class Bill(db.Model):
     total_amount= db.Column(db.Float,   nullable=False)
     paid_by     = db.Column(db.String(80), nullable=False)   # user who paid
     group_id    = db.Column(db.Integer, nullable=False)
+    category    = db.Column(db.String(40), nullable=False, default="General")
     created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+    participants = db.relationship(
+        "BillParticipant",
+        backref="bill",
+        cascade="all, delete-orphan",
+        order_by="BillParticipant.id",
+    )
 
     def to_dict(self):
         return {
@@ -20,7 +28,9 @@ class Bill(db.Model):
             "total_amount": self.total_amount,
             "paid_by":      self.paid_by,
             "group_id":     self.group_id,
+            "category":     self.category,
             "created_at":   self.created_at.isoformat(),
+            "participants": [p.to_dict() for p in self.participants],
         }
 
 
@@ -33,3 +43,10 @@ class BillParticipant(db.Model):
     user_name  = db.Column(db.String(80), nullable=False)
     share      = db.Column(db.Float, nullable=False)   # amount owed by this participant
     settled    = db.Column(db.Boolean, default=False)
+
+    def to_dict(self):
+        return {
+            "user_name": self.user_name,
+            "share":     self.share,
+            "settled":   self.settled,
+        }
