@@ -20,19 +20,53 @@ export default function MonthlyReport() {
 
   return (
     <div>
-      <h2>US06 — Monthly Report</h2>
-      <input type="month" value={period} onChange={e => setPeriod(e.target.value)} />
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      <div className="page-header">
+        <span className="tag">US06</span>
+        <h2>Monthly Report</h2>
+        <p>Spending breakdown for the selected month.</p>
+      </div>
+      <div className="toolbar">
+        <label htmlFor="period">Month</label>
+        <input id="period" type="month" value={period} onChange={e => setPeriod(e.target.value)} />
+      </div>
+      {error && <div className="alert alert-error">{error}</div>}
       {report && (report.bill_count === 0
-        ? <p style={{ color: '#888' }}>No expenses recorded for this period</p>
+        ? <div className="card empty"><span className="emoji">📭</span>No expenses recorded for this period</div>
         : (
           <div>
-            <p>Total spent: ${report.total.toFixed(2)}</p>
-            <p>Number of bills: {report.bill_count}</p>
-            <h3>By category</h3>
-            {report.categories.map(c => <div key={c.category}>{c.category}: ${c.amount.toFixed(2)}</div>)}
-            <h3>Bills</h3>
-            {report.items.map(item => <div key={item.id}>{item.date} — {item.title}: ${item.amount.toFixed(2)}</div>)}
+            <div className="stats">
+              <div className="card">
+                <div className="stat-label">Total spent</div>
+                <div className="stat-value">${report.total.toFixed(2)}</div>
+              </div>
+              <div className="card">
+                <div className="stat-label">Number of bills</div>
+                <div className="stat-value">{report.bill_count}</div>
+              </div>
+            </div>
+            <div className="card">
+              <h3>By category</h3>
+              {report.categories.map(c => (
+                <div key={c.category} className="category-row">
+                  <div className="top">
+                    <span>{c.category}</span>
+                    <span className="amount">${c.amount.toFixed(2)}</span>
+                  </div>
+                  <div className="bar">
+                    <div className="bar-fill" style={{ width: `${report.total ? (c.amount / report.total) * 100 : 0}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="card">
+              <h3>Bills</h3>
+              {report.items.map(item => (
+                <div key={item.id} className="item-row">
+                  <span><span className="item-date">{item.date}</span>{item.title}</span>
+                  <span className="amount">${item.amount.toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )
       )}

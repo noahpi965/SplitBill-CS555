@@ -14,13 +14,30 @@ export default function BalanceSummary() {
 
   return (
     <div>
-      <h2>US05 — Balance Summary</h2>
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
+      <div className="page-header">
+        <span className="tag">US05</span>
+        <h2>Balance Summary</h2>
+        <p>Who owes whom across all group bills.</p>
+      </div>
+      {error && <div className="alert alert-error">{error}</div>}
       {balances.length === 0
-        ? <p style={{ color: 'green', fontWeight: 'bold' }}>● 🎉 All settled up! 🎉</p>
-        : balances.map((b, i) => (
-            <div key={i}>{b.from} owes {b.to}: ${b.amount.toFixed(2)}</div>
-          ))
+        ? <div className="settled">🎉 All settled up! 🎉</div>
+        : (
+          <div className="balance-list">
+            {balances.map((b, i) => (
+              <div key={i} className="balance-row">
+                <div className="who">
+                  <span className="avatar">{b.from.charAt(0).toUpperCase()}</span>
+                  <strong>{b.from}</strong>
+                  <span className="arrow">owes →</span>
+                  <span className="avatar">{b.to.charAt(0).toUpperCase()}</span>
+                  <strong>{b.to}</strong>
+                </div>
+                <span className="amount">${b.amount.toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+        )
       }
     </div>
   )

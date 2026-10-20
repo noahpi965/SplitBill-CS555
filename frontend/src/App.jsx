@@ -1,23 +1,53 @@
-import { Routes, Route, Link } from 'react-router-dom'
+import { Routes, Route, Link, NavLink } from 'react-router-dom'
 import AddBill        from './pages/AddBill'
 import GroupBills     from './pages/GroupBills'
 import BalanceSummary from './pages/BalanceSummary'
 import MonthlyReport  from './pages/MonthlyReport'
 
+const NAV_ITEMS = [
+  { to: '/add-bill', label: 'Add Bill',       icon: '➕', desc: 'Record a new shared expense and split it.' },
+  { to: '/bills',    label: 'Group Bills',    icon: '🧾', desc: 'See every bill in your group.' },
+  { to: '/balance',  label: 'Balance',        icon: '⚖️', desc: 'Find out who owes whom.' },
+  { to: '/report',   label: 'Monthly Report', icon: '📊', desc: 'Review spending by month and category.' },
+]
+
+function Home() {
+  return (
+    <div>
+      <section className="hero">
+        <h1>Welcome to SplitBill 👋</h1>
+        <p>Split shared bills with your group — fair, simple, and transparent.</p>
+      </section>
+      <div className="feature-grid">
+        {NAV_ITEMS.map(item => (
+          <Link key={item.to} to={item.to} className="card feature">
+            <span className="icon">{item.icon}</span>
+            <h3>{item.label}</h3>
+            <p>{item.desc}</p>
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function App() {
   return (
     <div>
-      <nav style={{ padding: '12px', background: '#2A1F14', color: '#fff', display: 'flex', gap: '20px' }}>
-        <strong>💸 SplitBill</strong>
-        <Link to="/add-bill"   style={{ color: '#F0DFC4' }}>Add Bill</Link>
-        <Link to="/bills"      style={{ color: '#F0DFC4' }}>Group Bills</Link>
-        <Link to="/balance"    style={{ color: '#F0DFC4' }}>Balance</Link>
-        <Link to="/report"     style={{ color: '#F0DFC4' }}>Monthly Report</Link>
+      <nav className="navbar">
+        <div className="navbar-inner">
+          <Link to="/" className="brand">💸 SplitBill</Link>
+          <div className="nav-links">
+            {NAV_ITEMS.map(item => (
+              <NavLink key={item.to} to={item.to} className="nav-link">{item.label}</NavLink>
+            ))}
+          </div>
+        </div>
       </nav>
 
-      <main style={{ padding: '24px' }}>
+      <main className="container">
         <Routes>
-          <Route path="/"          element={<h2>Welcome to SplitBill 👋</h2>} />
+          <Route path="/"          element={<Home />} />
           <Route path="/add-bill"  element={<AddBill />} />
           <Route path="/bills"     element={<GroupBills />} />
           <Route path="/balance"   element={<BalanceSummary />} />
