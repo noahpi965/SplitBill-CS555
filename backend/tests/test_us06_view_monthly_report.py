@@ -6,6 +6,10 @@ import pytest
 class TestUS06ViewMonthlyReport:
 
     def test_report_shows_total_bill_count_and_category_breakdown(self, client, add_bill):
+        """
+        Verify that monthly reports correctly summarize expenses,
+        group spending by category, and exclude bills from other months.
+        """
         # Arrange: Create three October bills across two categories.
         # Include a September bill to verify that expenses from other
         # months are excluded from the October report.
@@ -36,6 +40,10 @@ class TestUS06ViewMonthlyReport:
         assert [i["title"] for i in body["items"]] == ["Dinner", "Lunch", "Uber"]
 
     def test_month_without_activity_shows_no_expenses_message(self, client, add_bill):
+        """
+        Verify that months without expenses return zero totals,
+        empty categories, and an informative user-facing message.
+        """
         # Arrange: Create an October expense while leaving November
         # empty to test reporting for a month without activity.
         add_bill(date="2026-10-05")
