@@ -31,20 +31,46 @@ export default function AddBill() {
 
   return (
     <div>
-      <h2>US01 — Add a Shared Bill</h2>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 400 }}>
-        <input placeholder="Bill title"    value={form.title}        onChange={e => setForm({ ...form, title: e.target.value })} />
-        <input placeholder="Total amount"  value={form.total_amount} onChange={e => setForm({ ...form, total_amount: e.target.value })} type="number" step="0.01" />
-        <input placeholder="Paid by"       value={form.paid_by}      onChange={e => setForm({ ...form, paid_by: e.target.value })} />
-        <input placeholder="Participants (comma-separated)" value={form.participants} onChange={e => setForm({ ...form, participants: e.target.value })} />
-        <input placeholder="Category"      value={form.category}     onChange={e => setForm({ ...form, category: e.target.value })} />
-        <input value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} type="date" />
-        <button type="submit">Add Bill</button>
-      </form>
-      {message && <p style={{ color: 'green' }}>{message}</p>}
-      {Object.entries(errors).map(([field, msg]) => (
-        <p key={field} style={{ color: 'crimson' }}>{msg}</p>
-      ))}
+      <div className="page-header">
+        <span className="tag">US01</span>
+        <h2>Add a Shared Bill</h2>
+        <p>Record an expense and split it evenly among participants.</p>
+      </div>
+      <div className="card" style={{ maxWidth: 680 }}>
+        <form onSubmit={handleSubmit} className="form-grid">
+          <div className="field full">
+            <label htmlFor="title">Bill title</label>
+            <input id="title" placeholder="e.g. Dinner at Joe's" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
+          </div>
+          <div className="field">
+            <label htmlFor="total_amount">Total amount ($)</label>
+            <input id="total_amount" placeholder="0.00" value={form.total_amount} onChange={e => setForm({ ...form, total_amount: e.target.value })} type="number" step="0.01" />
+          </div>
+          <div className="field">
+            <label htmlFor="paid_by">Paid by</label>
+            <input id="paid_by" placeholder="e.g. Alice" value={form.paid_by} onChange={e => setForm({ ...form, paid_by: e.target.value })} />
+          </div>
+          <div className="field full">
+            <label htmlFor="participants">Participants</label>
+            <input id="participants" placeholder="Comma-separated, e.g. Alice, Bob, Carol" value={form.participants} onChange={e => setForm({ ...form, participants: e.target.value })} />
+          </div>
+          <div className="field">
+            <label htmlFor="category">Category</label>
+            <input id="category" placeholder="General" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} />
+          </div>
+          <div className="field">
+            <label htmlFor="date">Date</label>
+            <input id="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} type="date" />
+          </div>
+          <div className="form-actions">
+            <button type="submit" className="btn">Add Bill</button>
+          </div>
+        </form>
+        {message && <div className="alert alert-success">✅ {message}</div>}
+        {Object.entries(errors).map(([field, msg]) => (
+          <div key={field} className="alert alert-error">{msg}</div>
+        ))}
+      </div>
     </div>
   )
 }
