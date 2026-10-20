@@ -115,7 +115,7 @@ def get_bills():
     group_id = request.args.get("group_id", type=int)
     if group_id is None:
         return jsonify({"error": "group_id query parameter is required"}), 400
-
+# Look over the test cases 
     bills = (
         Bill.query.filter_by(group_id=group_id)
         .order_by(Bill.created_at.desc(), Bill.id.desc())
