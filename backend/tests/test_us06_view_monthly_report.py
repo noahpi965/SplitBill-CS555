@@ -61,4 +61,4 @@ class TestUS06ViewMonthlyReport:
 
         # Verify that the report provides a clear message informing
         # the user that no expenses exist for the selected period.
-        assert body["message"] == "No expenses recorded for this period."
+        assert body["message"] == "No expenses recorded for this period"
