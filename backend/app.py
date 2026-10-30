@@ -22,11 +22,15 @@ def create_app(testing=False):
     # Register models so SQLAlchemy can create tables
     import models  # noqa: F401
 
+    app.config["SECRET_KEY"] = "splitbill-dev-secret"
+
     # Register route blueprints
     from routes.bills   import bills_bp
     from routes.reports import reports_bp
+    from routes.auth    import auth_bp
     app.register_blueprint(bills_bp,   url_prefix="/api")
     app.register_blueprint(reports_bp, url_prefix="/api")
+    app.register_blueprint(auth_bp,    url_prefix="/api")
 
     with app.app_context():
         db.create_all()

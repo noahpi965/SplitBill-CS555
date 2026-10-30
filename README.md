@@ -13,9 +13,9 @@ SplitBill-CS555/
 │   ├── models.py     # SQLAlchemy models
 │   ├── routes/       # API route blueprints
 │   │   ├── bills.py
-│   │   └── reports.py
+│   │   ├── reports.py
+│   │   └── auth.py
 │   ├── tests/        # Pytest test suite
-│   │   └── test_sprint1.py
 │   └── requirements.txt
 └── frontend/         # React SPA
     ├── index.html
@@ -25,8 +25,11 @@ SplitBill-CS555/
     │   └── pages/
     │       ├── AddBill.jsx
     │       ├── GroupBills.jsx
+    │       ├── EditBill.jsx
     │       ├── BalanceSummary.jsx
-    │       └── MonthlyReport.jsx
+    │       ├── MonthlyReport.jsx
+    │       ├── Register.jsx
+    │       └── Login.jsx
     └── package.json
 ```
 
@@ -62,10 +65,22 @@ GitHub Actions runs on every push and pull request to `main`:
 - **Frontend Build**: install npm deps and run `npm run build`
 
 
-## Sprint 1 — User Stories (Todo)
+## Sprint 1 — User Stories
 | # | Story | Endpoint |
 |---|-------|----------|
 | US01 | Add a Shared Bill | `POST /api/bills` |
 | US04 | View Group Bills | `GET  /api/bills` |
 | US05 | View Balance Summary | `GET  /api/balance` |
 | US06 | View Monthly Report | `GET  /api/reports/monthly` |
+
+## Sprint 2 — User Stories
+| # | Story | Owner | Endpoint |
+|---|-------|-------|----------|
+| US02 | Custom Split Rule | noahpi965 | `POST /api/bills` (`split_type=custom`) |
+| US03 | Send Payment Reminder | Mike-Prez351 | `POST /api/reminders` |
+| US07 | Edit Existing Bill | Theodore-Genius | `PUT /api/bills/<id>` |
+| US08 | Mark Debt as Settled | Mike-Prez351 | `POST /api/settlements` |
+| US09 | Delete Erroneous Bill | Theodore-Genius | `DELETE /api/bills/<id>` |
+| US10 | Remove Participant from Bill | noahpi965 | `PUT /api/bills/<id>` |
+| US11 | User Account Registration | LennyBoyBoy | `POST /api/auth/register` |
+| US12 | User Login | LennyBoyBoy | `POST /api/auth/login` |
