@@ -42,3 +42,17 @@ class TestUS09DeleteErroneousBill:
         missing = client.delete("/api/bills/999")
         assert missing.status_code == 404
         assert Bill.query.count() == 1
+
+    def test_deleting_last_bill_resets_balance_to_all_settled(self, client, add_bill):
+        created = add_bill(
+            title="Duplicate Entry",
+            total_amount=50,
+            paid_by="Alice",
+            participants=["Alice", "Bob"],
+        ).get_json()["bill"]
+
+        response = client.delete(f"/api/bills/{created['id']}")
+
+        assert response.status_code == 200
+        balance = client.get("/api/balance?group_id=1").get_json()
+        assert balance["all_settled"] is True
