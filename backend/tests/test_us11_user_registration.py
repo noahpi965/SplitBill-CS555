@@ -1,21 +1,21 @@
-"""US11 (#13): User Account Registration."""
+"""US11 (#13): user account registration"""
 from models import User
 
 
 class TestUS11UserAccountRegistration:
 
     def test_valid_registration_creates_account(self, client):
-        # Arrange
+        # set up valid account info
         payload = {
             "email":    "alice@example.com",
             "password": "Secret123",
             "name":     "Alice",
         }
 
-        # Act
+        # send registration request
         response = client.post("/api/auth/register", json=payload)
 
-        # Assert
+        # check account info, token, and saved user
         assert response.status_code == 201
         body = response.get_json()
         assert body["user"]["email"] == "alice@example.com"
@@ -24,19 +24,19 @@ class TestUS11UserAccountRegistration:
         assert User.query.filter_by(email="alice@example.com").count() == 1
 
     def test_duplicate_email_returns_user_already_exists(self, client):
-        # Arrange
+        # create the account first
         client.post("/api/auth/register", json={
             "email": "alice@example.com",
             "password": "Secret123",
         })
 
-        # Act
+        # try the same email with different capitalization
         response = client.post("/api/auth/register", json={
             "email": "Alice@example.com",
             "password": "OtherPass1",
         })
 
-        # Assert
+        # check error and make sure no extra account was created
         assert response.status_code == 409
         assert response.get_json()["error"] == "User already exists"
         assert User.query.count() == 1
