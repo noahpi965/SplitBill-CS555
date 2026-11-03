@@ -77,3 +77,11 @@ class TestUS07EditExistingBill:
         assert response.status_code == 200
         shares = {p["user_name"]: p["share"] for p in response.get_json()["bill"]["participants"]}
         assert shares == {"Alice": 60.0, "Bob": 140.0}
+    def test_editing_nonexistent_bill_returns_404(self, client):
+        response = client.put("/api/bills/999", json={"total_amount": 50})
+        assert response.status_code == 404
+
+    def test_editing_with_invalid_amount_returns_400(self, client, add_bill):
+        created = add_bill(total_amount=60).get_json()["bill"]
+        response = client.put(f"/api/bills/{created['id']}", json={"total_amount": -10})
+        assert response.status_code == 400
