@@ -24,11 +24,30 @@ export default function EditBill() {
           category: bill.category,
           split_type: bill.split_type || 'equal',
           participants: bill.participants.map(p => p.user_name),
+          shares: Object.fromEntries(bill.participants.map(p => [p.user_name, p.share])),
           settled: bill.participants.filter(p => p.settled).map(p => p.user_name),
         })
       })
       .catch(() => setErrors({ form: 'Could not load this bill.' }))
   }, [id])
+
+  const ratiosFor = (names) => {
+    if (!form || (form.split_type || 'equal') !== 'custom') return {}
+    const total = names.reduce((sum, name) => sum + Number(form.shares?.[name] || 0), 0)
+    if (total <= 0) return { split_type: 'equal' }
+    const ratios = {}
+    let used = 0
+    names.forEach((name, i) => {
+      if (i === names.length - 1) {
+        ratios[name] = Math.round((100 - used) * 100) / 100
+      } else {
+        const pct = Math.round((Number(form.shares[name] || 0) / total) * 10000) / 100
+        ratios[name] = pct
+        used += pct
+      }
+    })
+    return { ratios }
+  }
 
   const save = async (payload, confirmed = false) => {
     setMessage('')
@@ -41,6 +60,7 @@ export default function EditBill() {
       setForm({
         ...form,
         ...payload,
+        shares: Object.fromEntries(data.bill.participants.map(p => [p.user_name, p.share])),
         settled: data.bill.participants.filter(p => p.settled).map(p => p.user_name),
       })
       setPending(null)
@@ -68,6 +88,7 @@ export default function EditBill() {
       category: form.category,
       split_type: form.split_type,
       participants: form.participants,
+      ...ratiosFor(form.participants),
     })
   }
 
@@ -81,6 +102,7 @@ export default function EditBill() {
       category: form.category,
       split_type: form.split_type,
       participants: next,
+      ...ratiosFor(next),
     })
   }
 

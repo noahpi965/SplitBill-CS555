@@ -77,6 +77,23 @@ def _parse_ratios(participants, data):
     return split_type, percents, None
 
 
+def _ratios_from_shares(participants, share_map):
+    """Rebuild percent ratios from saved dollar shares so edits can omit ratios."""
+    total = sum(float(share_map.get(name) or 0) for name in participants)
+    if total <= 0 or not participants:
+        return None
+    ratios = {}
+    acc = 0.0
+    for i, name in enumerate(participants):
+        if i == len(participants) - 1:
+            pct = round(100 - acc, 2)
+        else:
+            pct = round(float(share_map.get(name) or 0) / total * 100, 2)
+            acc += pct
+        ratios[name] = pct
+    return ratios
+
+
 def _shares_for(total_amount, participants, split_type, percents):
     if split_type == "custom":
         return _split_by_percent(total_amount, percents)
@@ -320,6 +337,17 @@ def update_bill(bill_id):
         "ratios":       data.get("ratios"),
         "date":         data.get("date"),
     }
+    if (str(merged["split_type"] or "equal").lower() == "custom"
+            and not isinstance(merged.get("ratios"), dict)):
+        names, _ = _parse_participants(merged["participants"])
+        derived = _ratios_from_shares(
+            names or [],
+            {p.user_name: p.share for p in bill.participants},
+        )
+        if derived:
+            merged["ratios"] = derived
+        else:
+            merged["split_type"] = "equal"
     cleaned, errors = _validate_bill(merged)
     if errors:
         return jsonify({"error": "Validation failed", "errors": errors}), 400

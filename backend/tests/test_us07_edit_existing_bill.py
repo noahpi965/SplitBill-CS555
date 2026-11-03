@@ -62,3 +62,18 @@ class TestUS07EditExistingBill:
         )
         assert confirmed.status_code == 200
         assert confirmed.get_json()["bill"]["total_amount"] == 120
+
+    def test_editing_custom_split_without_ratios_keeps_percentages(self, client, add_bill):
+        created = add_bill(
+            total_amount=100,
+            paid_by="Alice",
+            participants=["Alice", "Bob"],
+            split_type="custom",
+            ratios={"Alice": 30, "Bob": 70},
+        ).get_json()["bill"]
+
+        response = client.put(f"/api/bills/{created['id']}", json={"total_amount": 200})
+
+        assert response.status_code == 200
+        shares = {p["user_name"]: p["share"] for p in response.get_json()["bill"]["participants"]}
+        assert shares == {"Alice": 60.0, "Bob": 140.0}
