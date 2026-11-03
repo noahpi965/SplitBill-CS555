@@ -1,4 +1,4 @@
-"""US03 (#5): Send Payment Reminder."""
+"""US03 (#5): Send Payment Reminder"""
 from datetime import datetime, timedelta
 
 from extensions import db
