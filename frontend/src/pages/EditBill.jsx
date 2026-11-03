@@ -128,6 +128,10 @@ export default function EditBill() {
             <input id="paid_by" value={form.paid_by} onChange={e => setForm({ ...form, paid_by: e.target.value })} />
           </div>
           <div className="field full">
+            <label htmlFor="category">Category</label>
+            <input id="category" value={form.category || ''} onChange={e => setForm({ ...form, category: e.target.value })} />
+          </div>
+          <div className="field full">
             <label>Participants</label>
             <div className="chip-list">
               {form.participants.map(name => (
