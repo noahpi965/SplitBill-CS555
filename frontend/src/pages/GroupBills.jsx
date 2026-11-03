@@ -66,6 +66,7 @@ export default function GroupBills() {
                       <td>
                         <div className="row-actions">
                           <Link to={`/bills/${b.id}/edit`} className="btn btn-secondary btn-sm">Edit</Link>
+                          //changed this line
                           <button type="button" className="btn btn-danger btn-sm" onClick={() => { setError(''); setMessage(''); setPendingDelete(b) }}>Delete</button>
                         </div>
                       </td>
