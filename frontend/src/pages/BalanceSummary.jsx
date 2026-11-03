@@ -56,7 +56,7 @@ export default function BalanceSummary() {
       <div className="page-header">
         <span className="tag">US05 · US08 · US03</span>
         <h2>Balance Summary</h2>
-        <p>Who owes whom across all group bills. Settle a debt or send a reminder.</p>
+        <p>Tracks who owes whom across all group bills. Settle a debt or send a reminder.</p>
       </div>
       {error && <div className="alert alert-error">{error}</div>}
       {message && <div className="alert alert-success">{message}</div>}
