@@ -127,6 +127,7 @@ export default function EditBill() {
             <label htmlFor="paid_by">Paid by</label>
             <input id="paid_by" value={form.paid_by} onChange={e => setForm({ ...form, paid_by: e.target.value })} />
           </div>
+          // added this let me know if it's ok 
           <div className="field full">
             <label htmlFor="category">Category</label>
             <input id="category" value={form.category || ''} onChange={e => setForm({ ...form, category: e.target.value })} />
