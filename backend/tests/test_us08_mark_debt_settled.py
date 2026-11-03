@@ -1,4 +1,4 @@
-"""US08 (#10): Mark Debt as Settled."""
+"""US08 (#10): Mark Debt as Settled"""
 
 
 class TestUS08MarkDebtAsSettled:
