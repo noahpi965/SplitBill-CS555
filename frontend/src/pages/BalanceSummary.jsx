@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import axios from '../api'
+import axios, { getActiveGroupId } from '../api'
 import Avatar from '../components/Avatar'
 
 // US05 / US08 / US03: balances, mark settled, send reminder
@@ -11,7 +11,7 @@ export default function BalanceSummary() {
   const [message, setMessage] = useState('')
 
   const load = () => {
-    axios.get('/api/balance', { params: { group_id: 1 } })
+    axios.get('/api/balance', { params: { group_id: getActiveGroupId() } })
       .then(({ data }) => {
         setBalances(data.balances)
         setHistory(data.settled_history || [])
@@ -27,7 +27,7 @@ export default function BalanceSummary() {
     setMessage('')
     try {
       const { data } = await axios.post('/api/settlements', {
-        group_id: 1,
+        group_id: getActiveGroupId(),
         from: row.from,
         to: row.to,
       })
@@ -44,7 +44,7 @@ export default function BalanceSummary() {
     setMessage('')
     try {
       const { data } = await axios.post('/api/reminders', {
-        group_id: 1,
+        group_id: getActiveGroupId(),
         from: row.to,
         to: row.from,
       })

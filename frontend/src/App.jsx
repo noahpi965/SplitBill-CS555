@@ -10,10 +10,13 @@ import Login          from './pages/Login'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword  from './pages/ResetPassword'
 import Profile        from './pages/Profile'
+import Groups         from './pages/Groups'
+import GroupDetail    from './pages/GroupDetail'
 import Avatar         from './components/Avatar'
 import { clearSession, getStoredUser } from './api'
 
 const NAV_ITEMS = [
+  { to: '/groups',   label: 'Groups',         icon: '👥', desc: 'Create groups, invite friends, and manage members.' },
   { to: '/add-bill', label: 'Add Bill',       icon: '➕', desc: 'Record a new shared expense and split it.' },
   { to: '/bills',    label: 'Group Bills',    icon: '🧾', desc: 'See, edit, or delete bills in your group.' },
   { to: '/balance',  label: 'Balance',        icon: '⚖️', desc: 'Find out who owes whom, settle, or remind.' },
@@ -89,6 +92,8 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password"  element={<ResetPassword />} />
           <Route path="/profile"       element={<Profile onAuth={setUser} />} />
+          <Route path="/groups"        element={<Groups />} />
+          <Route path="/groups/:id"    element={<GroupDetail />} />
         </Routes>
       </main>
     </div>
