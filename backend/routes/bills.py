@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify, request
 from extensions import db
-from models import Bill, BillParticipant, Reminder, Settlement
+from models import Bill, BillParticipant, Reminder, Settlement, User
 
 bills_bp = Blueprint("bills", __name__)
 
@@ -206,6 +206,15 @@ def _pair_balances(net_cents):
     return balances
 
 
+def _avatar_map(names):
+    """Map display name -> avatar (US15) for names that have an avatar set."""
+    names = {n for n in names if n}
+    if not names:
+        return {}
+    rows = User.query.filter(User.name.in_(names), User.avatar.isnot(None)).all()
+    return {u.name: u.avatar for u in rows}
+
+
 def _balance_payload(group_id):
     net_cents = _apply_settlements(group_id, _bill_net_cents(group_id))
     balances = _pair_balances(net_cents)
@@ -220,6 +229,9 @@ def _balance_payload(group_id):
         "net":              members,
         "all_settled":      not balances,
         "settled_history":  history,
+        "avatars":          _avatar_map(
+            set(members) | {b["from"] for b in balances} | {b["to"] for b in balances}
+        ),
     }
     if not balances:
         body["message"] = "All settled up"
@@ -300,6 +312,11 @@ def get_bills():
         .all()
     )
     body = {"group_id": group_id, "bills": [b.to_dict() for b in bills]}
+    names = set()
+    for b in bills:
+        names.add(b.paid_by)
+        names.update(p.user_name for p in b.participants)
+    body["avatars"] = _avatar_map(names)
     if not bills:
         body["message"] = "No bills yet. Add one!"
     return jsonify(body), 200

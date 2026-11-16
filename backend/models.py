@@ -12,14 +12,28 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     name          = db.Column(db.String(80), nullable=False)
     token         = db.Column(db.String(64), unique=True, nullable=True)
+    avatar        = db.Column(db.Text, nullable=True)  # data: URL (US15)
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
         return {
-            "id":    self.id,
-            "email": self.email,
-            "name":  self.name,
+            "id":     self.id,
+            "email":  self.email,
+            "name":   self.name,
+            "avatar": self.avatar,
         }
+
+
+class PasswordReset(db.Model):
+    """One-time password reset token (US14)."""
+    __tablename__ = "password_resets"
+
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    token      = db.Column(db.String(64), unique=True, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    used       = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class Bill(db.Model):
