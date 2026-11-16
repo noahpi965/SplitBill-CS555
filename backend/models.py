@@ -12,82 +12,13 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     name          = db.Column(db.String(80), nullable=False)
     token         = db.Column(db.String(64), unique=True, nullable=True)
-    avatar        = db.Column(db.Text, nullable=True)  # data: URL (US15)
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
         return {
-            "id":     self.id,
-            "email":  self.email,
-            "name":   self.name,
-            "avatar": self.avatar,
-        }
-
-
-class PasswordReset(db.Model):
-    """One-time password reset token (US14)."""
-    __tablename__ = "password_resets"
-
-    id         = db.Column(db.Integer, primary_key=True)
-    user_id    = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    token      = db.Column(db.String(64), unique=True, nullable=False)
-    expires_at = db.Column(db.DateTime, nullable=False)
-    used       = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-
-class Group(db.Model):
-    """Expense group such as a trip or a shared home (US16)."""
-    __tablename__ = "groups"
-
-    id           = db.Column(db.Integer, primary_key=True)
-    name         = db.Column(db.String(80), nullable=False)
-    group_type   = db.Column(db.String(20), nullable=False, default="Other")
-    invite_code  = db.Column(db.String(32), unique=True, nullable=False)
-    simplify_debts = db.Column(db.Boolean, nullable=False, default=False)
-    created_at   = db.Column(db.DateTime, default=datetime.utcnow)
-
-    members = db.relationship(
-        "GroupMember",
-        backref="group",
-        cascade="all, delete-orphan",
-        order_by="GroupMember.id",
-    )
-
-    def to_dict(self):
-        return {
-            "id":             self.id,
-            "name":           self.name,
-            "group_type":     self.group_type,
-            "invite_code":    self.invite_code,
-            "simplify_debts": self.simplify_debts,
-            "member_count":   len(self.members),
-            "created_at":     self.created_at.isoformat(),
-        }
-
-
-class GroupMember(db.Model):
-    """Membership of a user in a group, with a role (US16-US19)."""
-    __tablename__ = "group_members"
-
-    id        = db.Column(db.Integer, primary_key=True)
-    group_id  = db.Column(db.Integer, db.ForeignKey("groups.id"), nullable=False)
-    user_id   = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    role      = db.Column(db.String(10), nullable=False, default="Member")
-    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    user = db.relationship("User")
-
-    __table_args__ = (db.UniqueConstraint("group_id", "user_id"),)
-
-    def to_dict(self):
-        return {
-            "id":        self.id,
-            "user_id":   self.user_id,
-            "name":      self.user.name,
-            "avatar":    self.user.avatar,
-            "role":      self.role,
-            "joined_at": self.joined_at.isoformat(),
+            "id":    self.id,
+            "email": self.email,
+            "name":  self.name,
         }
 
 

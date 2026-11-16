@@ -396,13 +396,3 @@ tbody tr:last-child td { border-bottom: none; }
   .form-grid, .stats { grid-template-columns: 1fr; }
   .hero { padding: 32px 24px; }
 }
-
-/* ── Sprint 3 ── */
-.avatar-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-.avatar-lg { width: 72px; height: 72px; font-size: 28px; }
-.role-badge { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #eef2ff; color: #3730a3; }
-.role-badge.admin { background: #fef3c7; color: #92400e; }
-.invite-box { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-.invite-box input { flex: 1; min-width: 240px; }
-.toggle-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-.inline-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }

@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
-import axios, { getActiveGroupId } from '../api'
+import axios from '../api'
 
 const EMPTY_FORM = {
-  title: '', total_amount: '', paid_by: '', group_id: getActiveGroupId(), participants: '', category: 'General', date: '',
+  title: '', total_amount: '', paid_by: '', group_id: 1, participants: '', category: 'General', date: '',
 }
 
 function parseNames(value) {

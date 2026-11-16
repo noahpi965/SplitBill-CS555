@@ -1,19 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Avatar from '../components/Avatar'
-import axios, { getActiveGroupId } from '../api'
+import axios from '../api'
 
 // US04 / US09: View Group Bills + delete with confirmation
 export default function GroupBills() {
   const [bills, setBills] = useState([])
-  const [avatars, setAvatars] = useState({})
   const [error, setError] = useState('')
   const [pendingDelete, setPendingDelete] = useState(null)
   const [message, setMessage] = useState('')
 
   const load = () => {
-    axios.get('/api/bills', { params: { group_id: getActiveGroupId() } })
-      .then(({ data }) => { setBills(data.bills); setAvatars(data.avatars || {}) })
+    axios.get('/api/bills', { params: { group_id: 1 } })
+      .then(({ data }) => setBills(data.bills))
       .catch(() => setError('Could not load bills.'))
   }
 
@@ -56,7 +54,7 @@ export default function GroupBills() {
                       <td>{b.created_at.slice(0, 10)}</td>
                       <td><strong>{b.title}</strong></td>
                       <td className="amount">${b.total_amount.toFixed(2)}</td>
-                      <td><Avatar name={b.paid_by} src={avatars[b.paid_by]} /> {b.paid_by}</td>
+                      <td>{b.paid_by}</td>
                       <td>
                         {b.participants.map(p => (
                           <span key={p.user_name} className="chip">

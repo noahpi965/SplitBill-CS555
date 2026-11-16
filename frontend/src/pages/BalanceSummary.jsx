@@ -1,41 +1,32 @@
 import { useEffect, useState } from 'react'
-import axios, { getActiveGroupId } from '../api'
-import Avatar from '../components/Avatar'
+import axios from '../api'
 
-// US05 / US08 / US03 / US27: balances, mark settled, send reminder, simplify debts
+// US05 / US08 / US03: balances, mark settled, send reminder
 export default function BalanceSummary() {
   const [balances, setBalances] = useState([])
   const [history, setHistory] = useState([])
-  const [avatars, setAvatars] = useState({})
-  const [simplify, setSimplify] = useState(null)
-  const [info, setInfo] = useState(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
   const load = () => {
-    const params = { group_id: getActiveGroupId() }
-    if (simplify !== null) params.simplify = simplify
-    axios.get('/api/balance', { params })
+    axios.get('/api/balance', { params: { group_id: 1 } })
       .then(({ data }) => {
         setBalances(data.balances)
         setHistory(data.settled_history || [])
-        setAvatars(data.avatars || {})
-        setInfo({ simplified: data.simplified, original: data.original_transfer_count })
       })
       .catch(() => setError('Could not load balances.'))
   }
 
-  useEffect(load, [simplify])
+  useEffect(load, [])
 
   const markSettled = async (row) => {
     setError('')
     setMessage('')
     try {
       const { data } = await axios.post('/api/settlements', {
-        group_id: getActiveGroupId(),
+        group_id: 1,
         from: row.from,
         to: row.to,
-        simplify: !!info?.simplified,
       })
       setBalances(data.balances)
       setHistory(data.settled_history || [])
@@ -50,7 +41,7 @@ export default function BalanceSummary() {
     setMessage('')
     try {
       const { data } = await axios.post('/api/reminders', {
-        group_id: getActiveGroupId(),
+        group_id: 1,
         from: row.to,
         to: row.from,
       })
@@ -69,16 +60,6 @@ export default function BalanceSummary() {
       </div>
       {error && <div className="alert alert-error">{error}</div>}
       {message && <div className="alert alert-success">{message}</div>}
-      <label className="toggle-row">
-        <input
-          type="checkbox"
-          checked={!!info?.simplified}
-          onChange={e => setSimplify(e.target.checked)}
-        />
-        Simplify Debts
-        {info?.simplified && info.original > balances.length &&
-          <span className="muted">— {info.original} payments reduced to {balances.length}</span>}
-      </label>
       {balances.length === 0
         ? <div className="settled">🎉 All settled up! 🎉</div>
         : (
@@ -86,10 +67,10 @@ export default function BalanceSummary() {
             {balances.map((b, i) => (
               <div key={i} className="balance-row">
                 <div className="who">
-                  <Avatar name={b.from} src={avatars[b.from]} />
+                  <span className="avatar">{b.from.charAt(0).toUpperCase()}</span>
                   <strong>{b.from}</strong>
                   <span className="arrow">owes →</span>
-                  <Avatar name={b.to} src={avatars[b.to]} />
+                  <span className="avatar">{b.to.charAt(0).toUpperCase()}</span>
                   <strong>{b.to}</strong>
                 </div>
                 <div className="row-actions">
