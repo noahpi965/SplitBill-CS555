@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify, request
 from extensions import db
-from models import Bill, BillParticipant, Reminder, Settlement, User
+from models import Bill, BillParticipant, Group, Reminder, Settlement, User
+from simplify import simplify_debts
 
 bills_bp = Blueprint("bills", __name__)
 
@@ -215,9 +216,26 @@ def _avatar_map(names):
     return {u.name: u.avatar for u in rows}
 
 
-def _balance_payload(group_id):
+def _parse_bool(value):
+    if value is None:
+        return None
+    return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+
+def _simplify_enabled(group_id, requested):
+    """Explicit request wins; otherwise use the group's Simplify Debts setting."""
+    if requested is not None:
+        return requested
+    group = db.session.get(Group, group_id)
+    return bool(group and group.simplify_debts)
+
+
+def _balance_payload(group_id, simplify=False):
     net_cents = _apply_settlements(group_id, _bill_net_cents(group_id))
     balances = _pair_balances(net_cents)
+    original_count = len(balances)
+    if simplify:
+        balances = simplify_debts(net_cents)
     members = {name: cents / 100 for name, cents in sorted(net_cents.items()) if cents != 0}
     history = [
         s.to_dict()
@@ -229,6 +247,8 @@ def _balance_payload(group_id):
         "net":              members,
         "all_settled":      not balances,
         "settled_history":  history,
+        "simplified":       simplify,
+        "original_transfer_count": original_count,
         "avatars":          _avatar_map(
             set(members) | {b["from"] for b in balances} | {b["to"] for b in balances}
         ),
@@ -238,8 +258,8 @@ def _balance_payload(group_id):
     return body
 
 
-def _outstanding_amount(group_id, debtor, creditor):
-    for row in _balance_payload(group_id)["balances"]:
+def _outstanding_amount(group_id, debtor, creditor, simplify=False):
+    for row in _balance_payload(group_id, simplify)["balances"]:
         if row["from"] == debtor and row["to"] == creditor:
             return row["amount"]
     return 0
@@ -429,12 +449,15 @@ def delete_bill(bill_id):
 def get_balance():
     """
     Return how much each member owes / is owed within a group.
-    Query param: ?group_id=<int>
+    Query params: ?group_id=<int>&simplify=true|false
+    US27: with simplify on (explicitly, or via the group's setting) the
+    transfers are recomputed to the minimum number of payments.
     """
     group_id = request.args.get("group_id", type=int)
     if group_id is None:
         return jsonify({"error": "group_id query parameter is required"}), 400
-    return jsonify(_balance_payload(group_id)), 200
+    simplify = _simplify_enabled(group_id, _parse_bool(request.args.get("simplify")))
+    return jsonify(_balance_payload(group_id, simplify)), 200
 
 
 # ── US08: Mark Debt as Settled ───────────────────────────────────────────────
@@ -442,19 +465,20 @@ def get_balance():
 def mark_settled():
     """
     Mark the outstanding pairwise debt as settled.
-    Body JSON: { group_id, from, to }
+    Body JSON: { group_id, from, to, simplify? }
     """
     data = request.get_json(silent=True) or {}
     group_id = data.get("group_id")
     debtor = (data.get("from") or "").strip()
     creditor = (data.get("to") or "").strip()
+    simplify = bool(data.get("simplify"))
 
     if isinstance(group_id, bool) or not isinstance(group_id, int):
         return jsonify({"error": "group_id must be an integer."}), 400
     if not debtor or not creditor:
         return jsonify({"error": "from and to are required."}), 400
 
-    amount = _outstanding_amount(group_id, debtor, creditor)
+    amount = _outstanding_amount(group_id, debtor, creditor, simplify)
     if amount <= 0:
         return jsonify({"error": "No outstanding balance between these members."}), 400
 
@@ -467,7 +491,7 @@ def mark_settled():
     db.session.add(settlement)
     db.session.commit()
 
-    payload = _balance_payload(group_id)
+    payload = _balance_payload(group_id, simplify)
     payload["message"] = "Debt marked as settled"
     payload["settlement"] = settlement.to_dict()
     return jsonify(payload), 201
@@ -525,3 +549,41 @@ def send_reminder():
         "message": f"Reminder sent to {debtor}",
         "notification": reminder.to_dict(),
     }), 201
+
+
+# ── US31: View Settlement Transaction History ────────────────────────────────
+@bills_bp.route("/settlements", methods=["GET"])
+def settlement_history():
+    """
+    Chronological log of completed payments for a group.
+    Query params: ?group_id=<int>&order=asc|desc (default asc, oldest first)
+                  &member=<name> (optional: only payments involving this person)
+    """
+    group_id = request.args.get("group_id", type=int)
+    if group_id is None:
+        return jsonify({"error": "group_id query parameter is required"}), 400
+    order = (request.args.get("order") or "asc").lower()
+    if order not in ("asc", "desc"):
+        return jsonify({"error": "order must be 'asc' or 'desc'."}), 400
+
+    query = Settlement.query.filter_by(group_id=group_id)
+    member = (request.args.get("member") or "").strip()
+    if member:
+        query = query.filter(
+            (Settlement.from_user == member) | (Settlement.to_user == member)
+        )
+    if order == "asc":
+        query = query.order_by(Settlement.created_at.asc(), Settlement.id.asc())
+    else:
+        query = query.order_by(Settlement.created_at.desc(), Settlement.id.desc())
+
+    rows = query.all()
+    body = {
+        "group_id":     group_id,
+        "settlements":  [s.to_dict() for s in rows],
+        "total_amount": round(sum(s.amount for s in rows), 2),
+        "avatars":      _avatar_map({s.from_user for s in rows} | {s.to_user for s in rows}),
+    }
+    if not rows:
+        body["message"] = "No payments have been settled yet."
+    return jsonify(body), 200
