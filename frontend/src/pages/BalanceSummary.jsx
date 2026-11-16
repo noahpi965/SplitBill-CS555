@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import axios from '../api'
+import Avatar from '../components/Avatar'
 
 // US05 / US08 / US03: balances, mark settled, send reminder
 export default function BalanceSummary() {
   const [balances, setBalances] = useState([])
   const [history, setHistory] = useState([])
+  const [avatars, setAvatars] = useState({})
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
@@ -13,6 +15,7 @@ export default function BalanceSummary() {
       .then(({ data }) => {
         setBalances(data.balances)
         setHistory(data.settled_history || [])
+        setAvatars(data.avatars || {})
       })
       .catch(() => setError('Could not load balances.'))
   }
@@ -67,10 +70,10 @@ export default function BalanceSummary() {
             {balances.map((b, i) => (
               <div key={i} className="balance-row">
                 <div className="who">
-                  <span className="avatar">{b.from.charAt(0).toUpperCase()}</span>
+                  <Avatar name={b.from} src={avatars[b.from]} />
                   <strong>{b.from}</strong>
                   <span className="arrow">owes →</span>
-                  <span className="avatar">{b.to.charAt(0).toUpperCase()}</span>
+                  <Avatar name={b.to} src={avatars[b.to]} />
                   <strong>{b.to}</strong>
                 </div>
                 <div className="row-actions">

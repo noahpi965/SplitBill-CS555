@@ -7,6 +7,10 @@ import BalanceSummary from './pages/BalanceSummary'
 import MonthlyReport  from './pages/MonthlyReport'
 import Register       from './pages/Register'
 import Login          from './pages/Login'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword  from './pages/ResetPassword'
+import Profile        from './pages/Profile'
+import Avatar         from './components/Avatar'
 import { clearSession, getStoredUser } from './api'
 
 const NAV_ITEMS = [
@@ -59,7 +63,7 @@ export default function App() {
           <div className="nav-auth">
             {user ? (
               <>
-                <span className="nav-user">{user.name}</span>
+                <NavLink to="/profile" className="nav-link"><Avatar name={user.name} src={user.avatar} /> {user.name}</NavLink>
                 <button type="button" className="nav-link nav-button" onClick={logout}>Log out</button>
               </>
             ) : (
@@ -82,6 +86,9 @@ export default function App() {
           <Route path="/report"        element={<MonthlyReport />} />
           <Route path="/register"      element={<Register onAuth={setUser} />} />
           <Route path="/login"         element={<Login onAuth={setUser} />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password"  element={<ResetPassword />} />
+          <Route path="/profile"       element={<Profile onAuth={setUser} />} />
         </Routes>
       </main>
     </div>

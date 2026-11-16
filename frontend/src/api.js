@@ -16,6 +16,12 @@ export function storeSession(payload) {
   return session
 }
 
+export function updateStoredUser(user) {
+  const session = { ...getStoredUser(), ...user }
+  localStorage.setItem(USER_KEY, JSON.stringify(session))
+  return session
+}
+
 export function clearSession() {
   localStorage.removeItem(USER_KEY)
 }
