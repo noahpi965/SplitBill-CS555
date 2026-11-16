@@ -15,6 +15,12 @@ def _membership(group_id, user):
     return GroupMember.query.filter_by(group_id=group_id, user_id=user.id).first()
 
 
+def _member_balance_cents(group_id, name):
+    """Net balance (cents) for a member name, using bills + settlements."""
+    from routes.bills import _apply_settlements, _bill_net_cents
+    return _apply_settlements(group_id, _bill_net_cents(group_id)).get(name, 0)
+
+
 def _auth_group(group_id, require_admin=False):
     """Return (user, group, membership, error_response)."""
     user = current_user()
@@ -95,3 +101,67 @@ def list_members(group_id):
         "group_id": group.id,
         "members": [m.to_dict() for m in group.members],
     }), 200
+
+
+# ── US19: Remove Member from Group ───────────────────────────────────────────
+@groups_bp.route("/groups/<int:group_id>/members/<int:member_id>", methods=["DELETE"])
+def remove_member(group_id, member_id):
+    _, group, _, err = _auth_group(group_id, require_admin=True)
+    if err:
+        return err
+
+    target = db.session.get(GroupMember, member_id)
+    if not target or target.group_id != group.id:
+        return jsonify({"error": "Member not found in this group."}), 404
+
+    if target.role == "Admin" and sum(1 for m in group.members if m.role == "Admin") == 1:
+        return jsonify({"error": "The only admin cannot be removed."}), 400
+
+    balance = _member_balance_cents(group.id, target.user.name)
+    if balance != 0:
+        return jsonify({
+            "error": f"{target.user.name} still has unsettled balances. "
+                     "Settle all debts before removing this member.",
+            "balance": balance / 100,
+        }), 409
+
+    db.session.delete(target)
+    db.session.commit()
+    return jsonify({"message": f"{target.user.name} removed", "id": member_id}), 200
+
+
+# ── US17: Join Group via Invite Link or QR Code ──────────────────────────────
+@groups_bp.route("/invites/<code>", methods=["GET"])
+def preview_invite(code):
+    """Public preview of the group behind an invite code."""
+    group = Group.query.filter_by(invite_code=code).first()
+    if not group:
+        return jsonify({"error": "This invite link is invalid."}), 404
+    return jsonify({"group": {
+        "id": group.id,
+        "name": group.name,
+        "group_type": group.group_type,
+        "member_count": len(group.members),
+    }}), 200
+
+
+@groups_bp.route("/invites/<code>/join", methods=["POST"])
+def join_group(code):
+    user = current_user()
+    if not user:
+        return jsonify({"error": "Not authenticated"}), 401
+    group = Group.query.filter_by(invite_code=code).first()
+    if not group:
+        return jsonify({"error": "This invite link is invalid."}), 404
+
+    existing = _membership(group.id, user)
+    if existing:
+        return jsonify({
+            "message": "You are already a member of this group.",
+            "already_member": True,
+            "group": group.to_dict(),
+        }), 200
+
+    group.members.append(GroupMember(user_id=user.id, role="Member"))
+    db.session.commit()
+    return jsonify({"message": f"Joined {group.name}", "group": group.to_dict()}), 201

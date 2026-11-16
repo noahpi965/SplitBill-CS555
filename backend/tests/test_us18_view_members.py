@@ -1,9 +1,6 @@
 """US18 (#20): View Group Members and Roles."""
 import base64
 
-from extensions import db
-from models import GroupMember
-
 PNG = "data:image/png;base64," + base64.b64encode(b"img").decode()
 
 
@@ -11,12 +8,10 @@ class TestUS18ViewMembers:
 
     def test_lists_names_avatars_and_roles(self, client, register, make_group):
         alice, _ = register("Alice")
-        bob, bob_user = register("Bob")
+        bob, _ = register("Bob")
         client.put("/api/auth/profile", json={"avatar": PNG}, headers=bob)
         group = make_group(alice)
-        with client.application.app_context():
-            db.session.add(GroupMember(group_id=group["id"], user_id=bob_user["id"], role="Member"))
-            db.session.commit()
+        client.post(f"/api/invites/{group['invite_code']}/join", headers=bob)
 
         response = client.get(f"/api/groups/{group['id']}/members", headers=alice)
 

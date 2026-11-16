@@ -12,6 +12,7 @@ import ResetPassword  from './pages/ResetPassword'
 import Profile        from './pages/Profile'
 import Groups         from './pages/Groups'
 import GroupDetail    from './pages/GroupDetail'
+import JoinGroup      from './pages/JoinGroup'
 import Avatar         from './components/Avatar'
 import { clearSession, getStoredUser } from './api'
 
@@ -94,6 +95,7 @@ export default function App() {
           <Route path="/profile"       element={<Profile onAuth={setUser} />} />
           <Route path="/groups"        element={<Groups />} />
           <Route path="/groups/:id"    element={<GroupDetail />} />
+          <Route path="/join/:code"    element={<JoinGroup />} />
         </Routes>
       </main>
     </div>
