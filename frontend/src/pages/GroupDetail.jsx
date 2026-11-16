@@ -4,7 +4,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import axios, { setActiveGroupId } from '../api'
 import Avatar from '../components/Avatar'
 
-// US18: members tab with roles · US19: remove member · US17: invite link / QR
+// US18: members tab with roles · US19: remove member · US17: invite link / QR · US27: simplify toggle
 export default function GroupDetail() {
   const { id } = useParams()
   const [group, setGroup] = useState(null)
@@ -35,6 +35,16 @@ export default function GroupDetail() {
       load()
     } catch (err) {
       setError(err.response?.data?.error || 'Could not remove this member.')
+    }
+  }
+
+  const toggleSimplify = async (checked) => {
+    setError('')
+    try {
+      const { data } = await axios.put(`/api/groups/${id}`, { simplify_debts: checked })
+      setGroup({ ...group, ...data.group })
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not update the setting.')
     }
   }
 
@@ -78,6 +88,15 @@ export default function GroupDetail() {
         </div>
       </div>
 
+      {isAdmin && (
+        <div className="card" style={{ marginTop: 24 }}>
+          <h3>Settings</h3>
+          <label className="toggle-row">
+            <input type="checkbox" checked={group.simplify_debts} onChange={e => toggleSimplify(e.target.checked)} />
+            Simplify Debts (minimise the number of payments)
+          </label>
+        </div>
+      )}
     </div>
   )
 }

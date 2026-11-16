@@ -13,6 +13,7 @@ import Profile        from './pages/Profile'
 import Groups         from './pages/Groups'
 import GroupDetail    from './pages/GroupDetail'
 import JoinGroup      from './pages/JoinGroup'
+import SettlementHistory from './pages/SettlementHistory'
 import Avatar         from './components/Avatar'
 import { clearSession, getStoredUser } from './api'
 
@@ -21,6 +22,7 @@ const NAV_ITEMS = [
   { to: '/add-bill', label: 'Add Bill',       icon: '➕', desc: 'Record a new shared expense and split it.' },
   { to: '/bills',    label: 'Group Bills',    icon: '🧾', desc: 'See, edit, or delete bills in your group.' },
   { to: '/balance',  label: 'Balance',        icon: '⚖️', desc: 'Find out who owes whom, settle, or remind.' },
+  { to: '/history',  label: 'Settlements',    icon: '🕑', desc: 'Audit every completed payment with timestamps.' },
   { to: '/report',   label: 'Monthly Report', icon: '📊', desc: 'Review spending by month and category.' },
 ]
 
@@ -96,6 +98,7 @@ export default function App() {
           <Route path="/groups"        element={<Groups />} />
           <Route path="/groups/:id"    element={<GroupDetail />} />
           <Route path="/join/:code"    element={<JoinGroup />} />
+          <Route path="/history"       element={<SettlementHistory />} />
         </Routes>
       </main>
     </div>

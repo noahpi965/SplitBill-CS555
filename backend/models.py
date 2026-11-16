@@ -44,6 +44,7 @@ class Group(db.Model):
     name         = db.Column(db.String(80), nullable=False)
     group_type   = db.Column(db.String(20), nullable=False, default="Other")
     invite_code  = db.Column(db.String(32), unique=True, nullable=False)
+    simplify_debts = db.Column(db.Boolean, nullable=False, default=False)
     created_at   = db.Column(db.DateTime, default=datetime.utcnow)
 
     members = db.relationship(
@@ -59,6 +60,7 @@ class Group(db.Model):
             "name":           self.name,
             "group_type":     self.group_type,
             "invite_code":    self.invite_code,
+            "simplify_debts": self.simplify_debts,
             "member_count":   len(self.members),
             "created_at":     self.created_at.isoformat(),
         }

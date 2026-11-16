@@ -91,6 +91,21 @@ def get_group(group_id):
     return jsonify({"group": body}), 200
 
 
+@groups_bp.route("/groups/<int:group_id>", methods=["PUT"])
+def update_group(group_id):
+    """Admin settings. Body JSON: { simplify_debts? }"""
+    _, group, _, err = _auth_group(group_id, require_admin=True)
+    if err:
+        return err
+    data = request.get_json(silent=True) or {}
+    if "simplify_debts" in data:
+        if not isinstance(data["simplify_debts"], bool):
+            return jsonify({"error": "simplify_debts must be true or false."}), 400
+        group.simplify_debts = data["simplify_debts"]
+    db.session.commit()
+    return jsonify({"message": "Group updated", "group": group.to_dict()}), 200
+
+
 # ── US18: View Group Members and Roles ───────────────────────────────────────
 @groups_bp.route("/groups/<int:group_id>/members", methods=["GET"])
 def list_members(group_id):

@@ -2,25 +2,30 @@ import { useEffect, useState } from 'react'
 import axios, { getActiveGroupId } from '../api'
 import Avatar from '../components/Avatar'
 
-// US05 / US08 / US03: balances, mark settled, send reminder
+// US05 / US08 / US03 / US27: balances, mark settled, send reminder, simplify debts
 export default function BalanceSummary() {
   const [balances, setBalances] = useState([])
   const [history, setHistory] = useState([])
   const [avatars, setAvatars] = useState({})
+  const [simplify, setSimplify] = useState(null)
+  const [info, setInfo] = useState(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
   const load = () => {
-    axios.get('/api/balance', { params: { group_id: getActiveGroupId() } })
+    const params = { group_id: getActiveGroupId() }
+    if (simplify !== null) params.simplify = simplify
+    axios.get('/api/balance', { params })
       .then(({ data }) => {
         setBalances(data.balances)
         setHistory(data.settled_history || [])
         setAvatars(data.avatars || {})
+        setInfo({ simplified: data.simplified, original: data.original_transfer_count })
       })
       .catch(() => setError('Could not load balances.'))
   }
 
-  useEffect(load, [])
+  useEffect(load, [simplify])
 
   const markSettled = async (row) => {
     setError('')
@@ -30,6 +35,7 @@ export default function BalanceSummary() {
         group_id: getActiveGroupId(),
         from: row.from,
         to: row.to,
+        simplify: !!info?.simplified,
       })
       setBalances(data.balances)
       setHistory(data.settled_history || [])
@@ -63,6 +69,16 @@ export default function BalanceSummary() {
       </div>
       {error && <div className="alert alert-error">{error}</div>}
       {message && <div className="alert alert-success">{message}</div>}
+      <label className="toggle-row">
+        <input
+          type="checkbox"
+          checked={!!info?.simplified}
+          onChange={e => setSimplify(e.target.checked)}
+        />
+        Simplify Debts
+        {info?.simplified && info.original > balances.length &&
+          <span className="muted">— {info.original} payments reduced to {balances.length}</span>}
+      </label>
       {balances.length === 0
         ? <div className="settled">🎉 All settled up! 🎉</div>
         : (
