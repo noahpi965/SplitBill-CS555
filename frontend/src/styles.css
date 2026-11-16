@@ -402,4 +402,6 @@ tbody tr:last-child td { border-bottom: none; }
 .avatar-lg { width: 72px; height: 72px; font-size: 28px; }
 .role-badge { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: #eef2ff; color: #3730a3; }
 .role-badge.admin { background: #fef3c7; color: #92400e; }
+.invite-box { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.invite-box input { flex: 1; min-width: 240px; }
 .inline-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }

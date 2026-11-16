@@ -4,12 +4,13 @@ import axios, { getActiveGroupId, getStoredUser, setActiveGroupId } from '../api
 
 const GROUP_TYPES = ['Home', 'Trip', 'Couple', 'Event', 'Other']
 
-// US16: Create Expense Group (+ list of my groups)
+// US16: Create Expense Group (+ list of my groups; join code entry for US17)
 export default function Groups() {
   const navigate = useNavigate()
   const user = getStoredUser()
   const [groups, setGroups] = useState([])
   const [form, setForm] = useState({ name: '', group_type: 'Home' })
+  const [code, setCode] = useState('')
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
 
@@ -46,7 +47,7 @@ export default function Groups() {
   return (
     <div>
       <div className="page-header">
-        <span className="tag">US16</span>
+        <span className="tag">US16 · US17</span>
         <h2>Groups</h2>
         <p>Create a group for the people you share expenses with.</p>
       </div>
@@ -67,6 +68,17 @@ export default function Groups() {
             </select>
           </div>
           <button type="submit" className="btn">Create Group</button>
+        </form>
+      </div>
+
+      <div className="card" style={{ marginTop: 24 }}>
+        <h3>Join with an invite code</h3>
+        <form onSubmit={(e) => { e.preventDefault(); if (code.trim()) navigate(`/join/${code.trim()}`) }} className="inline-form">
+          <div className="field">
+            <label htmlFor="code">Invite code</label>
+            <input id="code" value={code} onChange={e => setCode(e.target.value)} />
+          </div>
+          <button type="submit" className="btn btn-secondary">Find group</button>
         </form>
       </div>
 
