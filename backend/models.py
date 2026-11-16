@@ -36,6 +36,59 @@ class PasswordReset(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class Group(db.Model):
+    """Expense group such as a trip or a shared home (US16)."""
+    __tablename__ = "groups"
+
+    id           = db.Column(db.Integer, primary_key=True)
+    name         = db.Column(db.String(80), nullable=False)
+    group_type   = db.Column(db.String(20), nullable=False, default="Other")
+    invite_code  = db.Column(db.String(32), unique=True, nullable=False)
+    created_at   = db.Column(db.DateTime, default=datetime.utcnow)
+
+    members = db.relationship(
+        "GroupMember",
+        backref="group",
+        cascade="all, delete-orphan",
+        order_by="GroupMember.id",
+    )
+
+    def to_dict(self):
+        return {
+            "id":             self.id,
+            "name":           self.name,
+            "group_type":     self.group_type,
+            "invite_code":    self.invite_code,
+            "member_count":   len(self.members),
+            "created_at":     self.created_at.isoformat(),
+        }
+
+
+class GroupMember(db.Model):
+    """Membership of a user in a group, with a role (US16-US19)."""
+    __tablename__ = "group_members"
+
+    id        = db.Column(db.Integer, primary_key=True)
+    group_id  = db.Column(db.Integer, db.ForeignKey("groups.id"), nullable=False)
+    user_id   = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    role      = db.Column(db.String(10), nullable=False, default="Member")
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User")
+
+    __table_args__ = (db.UniqueConstraint("group_id", "user_id"),)
+
+    def to_dict(self):
+        return {
+            "id":        self.id,
+            "user_id":   self.user_id,
+            "name":      self.user.name,
+            "avatar":    self.user.avatar,
+            "role":      self.role,
+            "joined_at": self.joined_at.isoformat(),
+        }
+
+
 class Bill(db.Model):
     """Represents a shared bill within a group."""
     __tablename__ = "bills"

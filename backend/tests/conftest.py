@@ -49,6 +49,15 @@ def register(client):
     return _register
 
 
+@pytest.fixture
+def make_group(client):
+    """Create a group as the user owning `headers`; returns the group dict."""
+    def _make_group(headers, name="Apartment 3B", group_type="Home"):
+        r = client.post("/api/groups", json={"name": name, "group_type": group_type}, headers=headers)
+        return r.get_json()["group"]
+    return _make_group
+
+
 @pytest.fixture(autouse=True)
 def clear_outbox():
     from mailer import OUTBOX

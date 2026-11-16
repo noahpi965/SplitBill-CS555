@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Avatar from '../components/Avatar'
-import axios from '../api'
+import axios, { getActiveGroupId } from '../api'
 
 // US04 / US09: View Group Bills + delete with confirmation
 export default function GroupBills() {
@@ -12,7 +12,7 @@ export default function GroupBills() {
   const [message, setMessage] = useState('')
 
   const load = () => {
-    axios.get('/api/bills', { params: { group_id: 1 } })
+    axios.get('/api/bills', { params: { group_id: getActiveGroupId() } })
       .then(({ data }) => { setBills(data.bills); setAvatars(data.avatars || {}) })
       .catch(() => setError('Could not load bills.'))
   }
