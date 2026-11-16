@@ -28,9 +28,11 @@ def create_app(testing=False):
     from routes.bills   import bills_bp
     from routes.reports import reports_bp
     from routes.auth    import auth_bp
+    from routes.groups  import groups_bp
     app.register_blueprint(bills_bp,   url_prefix="/api")
     app.register_blueprint(reports_bp, url_prefix="/api")
     app.register_blueprint(auth_bp,    url_prefix="/api")
+    app.register_blueprint(groups_bp,  url_prefix="/api")
 
     with app.app_context():
         db.create_all()

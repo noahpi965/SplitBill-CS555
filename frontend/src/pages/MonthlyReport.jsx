@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import axios from 'axios'
+import axios, { getActiveGroupId } from '../api'
 
 const currentMonth = () => new Date().toISOString().slice(0, 7)
 
@@ -13,7 +13,7 @@ export default function MonthlyReport() {
     const [year, month] = period.split('-').map(Number)
     if (!year || !month) return
     setError('')
-    axios.get('/api/reports/monthly', { params: { group_id: 1, year, month } })
+    axios.get('/api/reports/monthly', { params: { group_id: getActiveGroupId(), year, month } })
       .then(({ data }) => setReport(data))
       .catch(() => setError('Could not load the report.'))
   }, [period])
