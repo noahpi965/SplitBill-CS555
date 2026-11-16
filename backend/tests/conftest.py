@@ -34,3 +34,33 @@ def add_bill(client):
         payload.update(overrides)
         return client.post("/api/bills", json=payload)
     return _add_bill
+
+
+@pytest.fixture
+def register(client):
+    """Register a user; returns (headers, user_dict)."""
+    def _register(name="Alice", email=None, password="Secret123"):
+        email = email or f"{name.lower()}@example.com"
+        r = client.post("/api/auth/register", json={
+            "email": email, "password": password, "name": name,
+        })
+        body = r.get_json()
+        return {"Authorization": f"Bearer {body['token']}"}, body["user"]
+    return _register
+
+
+@pytest.fixture
+def make_group(client):
+    """Create a group as the user owning `headers`; returns the group dict."""
+    def _make_group(headers, name="Apartment 3B", group_type="Home"):
+        r = client.post("/api/groups", json={"name": name, "group_type": group_type}, headers=headers)
+        return r.get_json()["group"]
+    return _make_group
+
+
+@pytest.fixture(autouse=True)
+def clear_outbox():
+    from mailer import OUTBOX
+    OUTBOX.clear()
+    yield
+    OUTBOX.clear()

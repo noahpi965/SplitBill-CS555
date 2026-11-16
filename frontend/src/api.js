@@ -16,6 +16,23 @@ export function storeSession(payload) {
   return session
 }
 
+const GROUP_KEY = 'splitbill_group'
+
+export function getActiveGroupId() {
+  const id = parseInt(localStorage.getItem(GROUP_KEY) || '1', 10)
+  return Number.isNaN(id) ? 1 : id
+}
+
+export function setActiveGroupId(id) {
+  localStorage.setItem(GROUP_KEY, String(id))
+}
+
+export function updateStoredUser(user) {
+  const session = { ...getStoredUser(), ...user }
+  localStorage.setItem(USER_KEY, JSON.stringify(session))
+  return session
+}
+
 export function clearSession() {
   localStorage.removeItem(USER_KEY)
 }

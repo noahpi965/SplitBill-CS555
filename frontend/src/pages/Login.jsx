@@ -43,6 +43,7 @@ export default function Login({ onAuth }) {
           </div>
         </form>
         {error && <div className="alert alert-error" role="alert">{error}</div>}
+        <p className="muted"><Link to="/forgot-password">Forgot password?</Link></p>
         <p className="muted">Need an account? <Link to="/register">Register</Link></p>
       </div>
     </div>
