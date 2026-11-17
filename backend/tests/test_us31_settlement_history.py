@@ -1,4 +1,4 @@
-"""US31 (#33): View Settlement Transaction History."""
+"""US31 (#33): View Settlement Transaction History"""
 from datetime import datetime, timedelta
 
 from extensions import db
