@@ -1,4 +1,4 @@
-"""US27 (#29): Smart Debt Simplification Algorithm."""
+"""US27 (#29): Smart Debt Simplification Algorithm"""
 import pytest
 
 from simplify import simplify_debts
@@ -18,7 +18,7 @@ def _complex_bills(add_bill):
 
 
 def _apply(transfers, nets):
-    """Net balances after performing the transfers; should all be zero."""
+    """Net balances after performing the transfers (should all be zero)"""
     result = dict(nets)
     for t in transfers:
         cents = round(t["amount"] * 100)
