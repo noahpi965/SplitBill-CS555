@@ -22,7 +22,7 @@ const NAV_ITEMS = [
   { to: '/add-bill', label: 'Add Bill',       icon: '➕', desc: 'Record a new shared expense and split it.' },
   { to: '/bills',    label: 'Group Bills',    icon: '🧾', desc: 'See, edit, or delete bills in your group.' },
   { to: '/balance',  label: 'Balance',        icon: '⚖️', desc: 'Find out who owes whom, settle, or remind.' },
-  { to: '/history',  label: 'Settlements',    icon: '🕑', desc: 'Audit every completed payment with timestamps.' },
+  { to: '/history',  label: 'Settlements',    icon: '🕑', desc: 'Review every completed payment with timestamps.' },
   { to: '/report',   label: 'Monthly Report', icon: '📊', desc: 'Review spending by month and category.' },
 ]
 
