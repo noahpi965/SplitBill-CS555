@@ -555,7 +555,7 @@ def send_reminder():
 @bills_bp.route("/settlements", methods=["GET"])
 def settlement_history():
     """
-    Chronological log of completed payments for a group.
+    Chronological log of completed payments for a group
     Query params: ?group_id=<int>&order=asc|desc (default asc, oldest first)
                   &member=<name> (optional: only payments involving this person)
     """
