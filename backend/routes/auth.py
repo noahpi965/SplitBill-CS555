@@ -1,3 +1,4 @@
+import os
 import re
 import secrets
 from datetime import datetime, timedelta
@@ -122,7 +123,8 @@ def forgot_password():
         )
         db.session.add(reset)
         db.session.commit()
-        link = f"{request.host_url.rstrip('/')}/reset-password?token={reset.token}"
+        frontend = os.environ.get("FRONTEND_URL", "http://localhost:3000").rstrip("/")
+        link = f"{frontend}/reset-password?token={reset.token}"
         send_email(
             user.email,
             "Reset your SplitBill password",
