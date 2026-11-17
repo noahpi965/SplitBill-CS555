@@ -117,7 +117,7 @@ def list_members(group_id):
         "members": [m.to_dict() for m in group.members],
     }), 200
 
-
+#Added features for US19
 # ── US19: Remove Member from Group ───────────────────────────────────────────
 @groups_bp.route("/groups/<int:group_id>/members/<int:member_id>", methods=["DELETE"])
 def remove_member(group_id, member_id):
