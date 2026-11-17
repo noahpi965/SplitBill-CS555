@@ -144,7 +144,7 @@ def remove_member(group_id, member_id):
     db.session.commit()
     return jsonify({"message": f"{target.user.name} removed", "id": member_id}), 200
 
-
+# Made changes here, let me know if they are good for the user story 
 # ── US17: Join Group via Invite Link or QR Code ──────────────────────────────
 @groups_bp.route("/invites/<code>", methods=["GET"])
 def preview_invite(code):
